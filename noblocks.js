@@ -1,3 +1,8 @@
+/**
+Here I tried a tutorial that suggested a way to bypass blocking in Node JS.
+I also played around with a little javascript recursion for the first time with the simple factorial method.
+*/
+
 var http = require('http');
 var url = require('url');
 var cp = require('child_process');

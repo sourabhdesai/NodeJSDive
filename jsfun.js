@@ -1,3 +1,13 @@
+/**
+	Here I did quite a few things.
+	I learned how to create objects in Javascript (Look at the person and personality objects below).
+	I also learned how to make simple get and post requests.
+	So far if you run `node jsfun.js` then you can see several things from your browser.
+	if you go to the address "localhost:8080" you can see a JSON version of the me variable below.
+	If you go to the address "http://localhost:8080/POST?&Name=<PUT_NAME_HERE>&Major=<PUT_MAJOR_HERE>", you can change the name and major of the me variable below. 
+	You will also get a JSON response back with a success field indicating whether the POST was sucessful, and a message indicating what went wrong if it wasn't.
+*/
+
 function person() {
 	// Sourabh Desai
 	person.prototype.init = function() {
