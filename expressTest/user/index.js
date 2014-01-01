@@ -1,15 +1,20 @@
-var passList = [];
+var MusicQueue = require('../music');
+var HashTable = require('hashtable');
+var userTable = new HashTable();
 
 exports.registerUser = function (req, res) {
-	var index = passList.indexOf(req.param("username"));
-	if(index != -1) {
-		res.status(404).json({success: false, message: "User already Registered"});
+	var username = req.param("username");
+	var password = req.param("password");
+	var user = userTable.get(username);
+	if(user != undefined) {
+		res.status(404).json( {success: false, message: "User already Registered"} );
 	} else {
-		passList.push( 
+		userTable.put(username, 
 			{ 
-				username : req.param("username") , 
-				password : req.param("password") , 
-				lastLogin : Date.now() 
+				username : username , 
+				password : password , 
+				lastLogin : Date.now(),
+				songQueue : new MusicQueue()
 			} 
 		);
 		res.json({success: true, message: "User Registered"});
@@ -17,34 +22,86 @@ exports.registerUser = function (req, res) {
 };
 
 exports.loginUser = function (req, res) {
-	var index = getUserIndex(req.param("username"));
-	if(index == -1) {
-		res.status(404).json({success: false, message: "User not Registered"});
+	var username = req.param("username");
+	var password = req.param("password");
+	var user = userTable.get(username);
+	if(user == undefined) {
+		res.status(404).json( { success : false , message : "User not Registered" } );
 	} else {
-		if(passList[index].password == req.param("password")) {
-			passList[index].lastLogin = Date.now();
-			res.json({success: true, message: "User Logged In"});
-		} else res.json({success: false, message: "Incorrect Password"});
+		if(user.password == password) {
+			user.lastLogin = Date.now();
+			res.json( { success : true , message : "User Logged In" } );
+		} else res.json( { success : false , message : "Incorrect password" } );
 
 	}
-};
-
-exports.listUsers = function(req, res) {
-	res.json(passList);
 };
 
 exports.getUser = function(req, res) {
-	var index = getUserIndex(req.param("username"));
-	if(index == -1) {
+	var username = req.param("username");
+	var user = userTable.get(username);
+	if(user == undefined) {
 		res.status(404).json({success: false, message: "User not Registered"});
 	} else {
-		res.json(passList[index]);
+		res.json({
+    		username : username,
+    		lastLogin : user.lastLogin,
+    		playlist : user.songQueue.getPlaylist()
+		});
+	} 
+};
+
+exports.addSong = function (req, res) {
+	var username = req.param("username");
+	var password = req.param("password");
+	var user = userTable.get(username);
+	if(user == undefined) {
+		res.json( { success : false , message : "Username is not registered" } );
+	} else if(user.password == password) {
+		user.songQueue.addSong(req.param("songlink"));
+		res.json( { success : true , message : "Added song to playlist!" } );
+	} else {
+		res.json( { success : false , message : "Incorrect password" } );
 	}
 };
 
-function getUserIndex(username) {
-	for (var i = passList.length - 1; i >= 0; i--) {
-		if(passList[i].username == username) return i;
+exports.nextSong = function (req, res) {
+	var username = req.param("username");
+	var password = req.param("password");
+	var user = userTable.get(username);
+	if(user == undefined) {
+		res.json( { success : false , message : "Username is not registered" } );
+	} else if(user.password == password) {
+		var song = user.songQueue.nextSong();
+		res.json(song);
+	} else {
+		res.json( { success : false , message : "Incorrect password" } );
 	}
-	return -1;
-}
+};
+
+exports.shuffle = function (req, res) {
+	var username = req.param("username");
+	var password = req.param("password");
+	var user = userTable.get(username);
+	if(user == undefined) {
+		res.json( { success : false , message : "Username is not registered" } );
+	} else if(user.password == password) {
+		user.songQueue.shuffle();
+		res.json( { success : true , message : "Shuffled playlist" } );
+	} else {
+		res.json( { success : false , message : "Incorrect password" } );
+	}
+};
+
+exports.removeSong = function (req, res) {
+	var username = req.param("username");
+	var password = req.param("password");
+	var songlink = req.param("songlink");
+	var user = userTable.get(username);
+	if(user == undefined) {
+		res.json( { success : false , message : "Username is not registered" } );
+	} else if(user.password == password) {
+		res.json( user.songQueue.removeSong(songlink) );
+	} else {
+		res.json( { success : false , message : "Incorrect password" } );
+	}
+};

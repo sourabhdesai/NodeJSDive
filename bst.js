@@ -66,12 +66,5 @@ bst.insert(-1, "Hello" );
 bst.insert( 0.5 , "Who" );
 bst.insert( -0.5 , "Howdy" );
 bst.inOrderTraversal();
-
-var a = 432234;
-var b = 765453;
-
-a = a ^ b;
-b= b ^ a;
-a = a ^ b;
-console.log( { A : a, B : b } );
+console.log(bst); // Print out entire BST as JSON
 
