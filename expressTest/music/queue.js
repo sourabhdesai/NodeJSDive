@@ -1,94 +1,60 @@
+// Basic Queue with one BIG difference: The queue loops around once it has dequeue'd all of its elements
+// Also, this uses an array in its implementation with an ammortized constant time push. It plays nicer with Mongoose schemas than a linked list.
 var Queue = function() {
 
 	this.size = 0;
-	this.root = null; // First link in linked list
-	this.leaf = null; // Last link in linked list
-
-	Queue.prototype.enqueue = function(obj) {
-		if(this.root == null) {
-			this.root = new Node(obj);
-			this.leaf = this.root;
-		}
-		else {
-			this.size++;
-			this.leaf.next = new Node(obj);
-			this.leaf = this.leaf.next;
-		}
+	this.marker = 0; // Marker tells us the current position in the queue
+	this.array = new Array(1);
+	Queue.prototype.copy = function(obj) {
+		this.size = obj.size;
+		this.marker = obj.marker;
+		this.array = obj.array;
 	};
 
+	Queue.prototype.enqueue = function(obj) {
+		if( this.size == this.array.length ) this.doubleArray();
+		this.array[this.size] = obj;
+		this.size++;
+	};
+
+	// Just returns the next element in the queue. Does not remove it!
 	Queue.prototype.dequeue = function() {
-		if(this.root == null) return null;
-		else {
-			var val = this.root.value;
-			this.root = this.root.next;
-			this.size--;
-			return val;
-		}
+		var obj = this.array[this.marker];
+		this.marker = (this.marker + 1) % this.size;
+		return obj;
 	};
 
 	// Returns true if obj was succesfully removed, false if it couldnt find it.
 	// O(n) operation.
 	Queue.prototype.remove = function(obj) {
-		var tmpNode = root;
-		var lastNode = null;
-		for (var i = size - 1; i >= 0; i--) {
-			if(tmpNode.value == obj) {
-				if(tmpNode == this.root) {
-					this.root = this.root.next;
-					this.size--;
-					return true;
-				} else if(tmpNode == this.leaf){
-					this.leaf = lastNode;
-					this.leaf.next = null;
-					this.size--;
-					return true;
-				} else {
-					lastNode.next = tmpNode.next;
-					this.size--;
-					return true;
-				}
-			} else {
-				// tmpNode's value does not match obj
-				lastNode = tmpNode;
-				tmpNode = tmpNode.next;
-			}
-		}
-		return false;
+		var index = this.array.indexOf(obj);
+		if(index != -1) {
+			this.array.splice(index,1);
+			this.size--;
+			return true;
+		} else return false;
 	};
 
 	Queue.prototype.clear = function() {
-		this.root = null;
-		this.leaf = null;
 		this.size = 0;
+		this.marker = 0;
+		this.array = new Array(1);
 	};
 
 	Queue.prototype.isEmpty = function() {
 		return this.size == 0;
 	};
 
-	Queue.prototype.size = function() {
-		return this.size;
-	};
-
 	Queue.prototype.getElems = function() {
-		var elementArray = new Array(this.size);
-		if(this.root != null) this.root.addValuesToArray(elementArray, 0);
-		return elementArray;
+		return this.array;
 	};
 
-};
-
-var Node = function(obj) {
-	this.value = obj;
-	this.next = null;
-
-	Node.prototype.getValue = function() {
-		return this.value;
-	};
-
-	Node.prototype.addValuesToArray = function(array, i) {
-		array[i] = ({ value : this.value});
-		if(this.next != null) this.next.addValuesToArray(array, i + 1 );
+	Queue.prototype.doubleArray = function() {
+		var newArray = new Array( 2 * this.array.length );
+		for (var i = this.array.length - 1; i >= 0; i--) {
+			newArray[i] = this.array[i];
+		};
+		this.array = newArray;
 	};
 
 };
