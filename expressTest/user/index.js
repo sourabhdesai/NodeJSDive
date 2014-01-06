@@ -67,9 +67,10 @@ MusicQueueSchema.methods.removeSong = function(link) {
 };
 
 MusicQueueSchema.methods.shuffle = function() {
-		var permArray = randperm(this.array.length); // randperm(...) is a function I defined later on in this module. Its not a method of MusicQueue
+		if(this.size == 0) return;
+		var permArray = randperm(this.size); // randperm(...) is a function I defined earlier on in this module. Its not a method of MusicQueue
 		var newArray = new Array(permArray.length);
-		for (var i = this.array.length - 1; i >= 0; i--) {
+		for (var i = this.size - 1; i >= 0; i--) {
 			newArray[i] = this.array[permArray[i]];
 		}
 		this.array = newArray;
